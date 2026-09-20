@@ -13,6 +13,8 @@ public class Feedback {
     @Column(nullable = false)
     private String authorName;
 
+    private Integer rating;
+
     @Column(nullable = false, length = 1500)
     private String comment;
 
@@ -27,6 +29,9 @@ public class Feedback {
 
     public String getAuthorName() { return authorName; }
     public void setAuthorName(String authorName) { this.authorName = authorName; }
+
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
 
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }

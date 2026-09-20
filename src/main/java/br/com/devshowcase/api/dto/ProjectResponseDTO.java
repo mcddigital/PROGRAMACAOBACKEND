@@ -10,6 +10,8 @@ public record ProjectResponseDTO(
     String description,
     String repositoryUrl,
     Long profileId,
+    Integer upvotes,
+    Double averageRating,
     Set<TechnologyResponseDTO> technologies
 ) {
     public static ProjectResponseDTO fromEntity(Project project) {
@@ -19,6 +21,8 @@ public record ProjectResponseDTO(
             project.getDescription(),
             project.getRepositoryUrl(),
             project.getProfile().getId(),
+            project.getUpvotes(),
+            project.getAverageRating(),
             project.getTechnologies()
                 .stream()
                 .map(TechnologyResponseDTO::fromEntity)

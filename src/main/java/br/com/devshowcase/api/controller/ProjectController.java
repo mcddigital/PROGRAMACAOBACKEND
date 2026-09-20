@@ -1,78 +1,61 @@
 package br.com.devshowcase.api.controller;
 
+import br.com.devshowcase.api.dto.FeedbackRequestDTO;
+import br.com.devshowcase.api.dto.FeedbackResponseDTO;
+import br.com.devshowcase.api.dto.PageResponseDTO;
 import br.com.devshowcase.api.dto.ProjectRequestDTO;
 import br.com.devshowcase.api.dto.ProjectResponseDTO;
-import br.com.devshowcase.api.entity.Profile;
-import br.com.devshowcase.api.entity.Project;
-import br.com.devshowcase.api.entity.Technology;
-import br.com.devshowcase.api.repository.ProfileRepository;
-import br.com.devshowcase.api.repository.ProjectRepository;
-import br.com.devshowcase.api.repository.TechnologyRepository;
+import br.com.devshowcase.api.service.ProjectService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/projects")
+@Validated
 public class ProjectController {
 
-    private final ProjectRepository projectRepository;
-    private final ProfileRepository profileRepository;
-    private final TechnologyRepository technologyRepository;
+    private final ProjectService projectService;
 
-    public ProjectController(
-        ProjectRepository projectRepository,
-        ProfileRepository profileRepository,
-        TechnologyRepository technologyRepository
-    ) {
-        this.projectRepository = projectRepository;
-        this.profileRepository = profileRepository;
-        this.technologyRepository = technologyRepository;
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProjectResponseDTO create(@Valid @RequestBody ProjectRequestDTO dto) {
-        Profile profile = profileRepository.findById(dto.profileId())
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Perfil não encontrado"
-            ));
-
-        Set<Technology> technologies = new HashSet<>();
-
-        if (dto.technologyIds() != null && !dto.technologyIds().isEmpty()) {
-            List<Technology> found = technologyRepository.findAllById(dto.technologyIds());
-
-            if (found.size() != dto.technologyIds().size()) {
-                throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Uma ou mais tecnologias não foram encontradas"
-                );
-            }
-
-            technologies.addAll(found);
-        }
-
-        Project project = new Project();
-        project.setTitle(dto.title());
-        project.setDescription(dto.description());
-        project.setRepositoryUrl(dto.repositoryUrl());
-        project.setProfile(profile);
-        project.setTechnologies(technologies);
-
-        return ProjectResponseDTO.fromEntity(projectRepository.save(project));
+        return projectService.create(dto);
     }
 
     @GetMapping
-    public List<ProjectResponseDTO> findAll() {
-        return projectRepository.findAll()
-            .stream()
-            .map(ProjectResponseDTO::fromEntity)
-            .toList();
+    public PageResponseDTO<ProjectResponseDTO> findAll(
+        @RequestParam(required = false) String technology,
+        @RequestParam(defaultValue = "0") @Min(value = 0, message = "A página deve ser 0 ou maior") int page,
+        @RequestParam(defaultValue = "10")
+        @Min(value = 1, message = "O tamanho da página deve ser no mínimo 1")
+        @Max(value = 100, message = "O tamanho da página deve ser no máximo 100") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return PageResponseDTO.from(projectService.findAll(technology, pageable));
+    }
+
+    @PostMapping("/{id}/feedbacks")
+    @ResponseStatus(HttpStatus.CREATED)
+    public FeedbackResponseDTO addFeedback(
+        @PathVariable Long id,
+        @Valid @RequestBody FeedbackRequestDTO dto
+    ) {
+        return projectService.addFeedback(id, dto);
+    }
+
+    @PutMapping("/{id}/upvote")
+    public ProjectResponseDTO upvote(@PathVariable Long id) {
+        return projectService.upvote(id);
     }
 }

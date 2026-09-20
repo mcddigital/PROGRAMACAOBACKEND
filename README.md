@@ -1,6 +1,6 @@
 # DevShowcase API
 
-Projeto da disciplina para implementação da fundação arquitetural da plataforma DevShowcase API.
+API REST desenvolvida em Java/Spring Boot para a plataforma DevShowcase.
 
 ## Grupo
 
@@ -15,8 +15,11 @@ Projeto da disciplina para implementação da fundação arquitetural da platafo
 - Spring Web
 - Spring Data JPA
 - Bean Validation
-- H2 Database
+- H2 (desenvolvimento local)
+- PostgreSQL (produção)
+- Swagger / OpenAPI
 - Maven
+- Docker
 
 ## Relacionamentos
 
@@ -26,79 +29,94 @@ Projeto da disciplina para implementação da fundação arquitetural da platafo
 
 ## Endpoints
 
-### Profile
+### Profiles
 - POST `/api/profiles`
 - GET `/api/profiles/{id}`
 
-### Technology
+### Technologies
 - POST `/api/technologies`
 - GET `/api/technologies`
 
-### Project
+### Projects
 - POST `/api/projects`
-- GET `/api/projects`
+- GET `/api/projects?page=0&size=10`
+- GET `/api/projects?technology=Java&page=0&size=10`
+- POST `/api/projects/{id}/feedbacks`
+- PUT `/api/projects/{id}/upvote`
 
-## Como executar
+## Feedback
+
+Exemplo:
+
+```json
+{
+  "authorName": "Maria",
+  "rating": 5,
+  "comment": "Projeto muito bom"
+}
+```
+
+A nota deve estar entre 1 e 5. Após cada feedback, a média do projeto é recalculada e armazenada.
+
+## Paginação e filtro
+
+Exemplo:
+
+```text
+GET /api/projects?technology=Java&page=0&size=10
+```
+
+## Swagger
+
+Com a aplicação em execução:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+OpenAPI JSON:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+## Como executar localmente
 
 Requisitos:
 - Java 21
 - Maven
 
-No terminal:
-
 ```bash
 mvn spring-boot:run
 ```
 
-A API ficará disponível em:
+Por padrão, o projeto utiliza H2 em arquivo:
 
 ```text
-http://localhost:8080
+jdbc:h2:file:./data/devshowcase
 ```
 
-Console H2:
+## Variáveis de ambiente para produção
+
+Configure no provedor de nuvem:
 
 ```text
-http://localhost:8080/h2-console
+DB_URL=jdbc:postgresql://HOST:5432/BANCO
+DB_USERNAME=usuario
+DB_PASSWORD=senha
+H2_CONSOLE_ENABLED=false
+SHOW_SQL=false
 ```
 
-Use no H2 Console:
+A porta pode ser fornecida automaticamente pela variável `PORT`.
 
-```text
-JDBC URL: jdbc:h2:file:./data/devshowcase
-User Name: sa
-Password: deixe vazio
-```
+## Tratamento de erros
 
-## Exemplos
+A API possui tratamento global para:
+- 400 Bad Request
+- 404 Not Found
+- erros de validação
+- conflitos de dados
+- erros internos
 
-Criar perfil:
-
-```json
-{
-  "name": "Daniel de Macedo Silva",
-  "email": "daniel@email.com",
-  "bio": "Desenvolvedor",
-  "githubUrl": "https://github.com/daniel"
-}
-```
-
-Criar tecnologia:
-
-```json
-{
-  "name": "Java"
-}
-```
-
-Criar projeto:
-
-```json
-{
-  "title": "DevShowcase API",
-  "description": "API de portfólio de desenvolvedores",
-  "repositoryUrl": "https://github.com/seu-usuario/devshowcase-api",
-  "profileId": 1,
-  "technologyIds": [1]
-}
-```
+As respostas são retornadas em JSON padronizado.
