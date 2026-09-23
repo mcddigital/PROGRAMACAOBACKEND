@@ -4,9 +4,9 @@ API REST desenvolvida em Java/Spring Boot para a plataforma DevShowcase.
 
 ## Grupo
 
-- ROSIMÁRIA COSTA LOPES
-- MARIA APARECIDA PAIVA
-- DANIEL DE MACEDO SILVA
+ANTONIA MÁRCIA ARAUJO DA SILVA
+DANIEL DE MACEDO SILVA
+MARIA APARECIDA PAIVA 
 
 ## Tecnologias
 
